@@ -1,0 +1,46 @@
+{
+  "name": "homecam",
+  "version": "1.0.0",
+  "description": "Home Surveillance Camera app written in NodeJS for Raspberry Pi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prithwirajbose/homecam.git"
+  },
+  "keywords": [
+    "camera",
+    "cam",
+    "home",
+    "surveillance",
+    "surveillance",
+    "cam",
+    "raspberry",
+    "pi",
+    "rpi",
+    "pi",
+    "cam",
+    "remote",
+    "cam"
+  ],
+  "author": "Prithwiraj Bose <sribasu@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/prithwirajbose/homecam/issues"
+  },
+  "homepage": "https://github.com/prithwirajbose/homecam#readme",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "fs": "^0.0.1-security",
+    "lodash": "^4.17.21",
+    "path": "^0.12.7",
+    "stream-split": "^1.1.0",
+    "ws": "^8.18.3"
+  }
+}
