@@ -18,7 +18,7 @@ function setSession(req, res, userId) {
 }
 
 function isValidCredentials(username, password) {
-    return !_.isNil(username) && !_.isNil(password) && username === process.env.USERNAME && password === process.env.PASSWORD;
+    return !_.isNil(username) && !_.isNil(password) && username === process.env.APPUSER && password === process.env.APPPASS;
 }
 
 function constructResponse(success, data, error) {

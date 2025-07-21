@@ -7,8 +7,8 @@ The `.env` should have following key-values:
 ```
 CAMAPP_COMMAND=libvideo
 COOKIE_SIGN_SECRET=YOUR_SECRET_KEY
-USERNAME=admin
-PASSWORD=password
+APPUSER=admin
+APPPASS=password
 ```
 
 Keywords:

@@ -67,7 +67,7 @@ app.get('/:pagename', (req, res) => {
 function isAuthenticated(req, res, next) {
     if (req.originalUrl === '/login' || req.originalUrl === '/api/login' || (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && !_.isNil(req.session) && !_.isNil(req.session.userId) && req.signedCookies.userId == req.session.userId)) {
         return next();
-    } else if (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && req.signedCookies.userId == process.env.USERNAME) {
+    } else if (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && req.signedCookies.userId == process.env.APPUSER) {
         apiutils.setSession(req, res, req.signedCookies.userId);
         return next();
     } else {
