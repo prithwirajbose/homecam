@@ -4,14 +4,14 @@ const http = require('http'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
     bodyParser = require('body-parser'),
+    cors = require('cors'),
     fs = require('fs'),
     path = require('path'),
     _ = require('lodash'),
-    Broadcaster = require('./libcamera-broadcaster'),
     apiutils = require('./apiutils');
-var broadcaster = null;
 
 const app = express();
+app.use(cors());
 app.use(cookieParser(process.env.COOKIE_SIGN_SECRET));
 app.use(session({
     secret: process.env.COOKIE_SIGN_SECRET, // A secret string used to sign the session ID cookie
@@ -78,5 +78,4 @@ function isAuthenticated(req, res, next) {
 const server = http.createServer(app);
 server.listen(8080, () => {
     console.log('Server is listening on port 8080');
-    broadcaster = new Broadcaster({ width: 320, height: 240, framerate: 15, port: 3000 });
 });

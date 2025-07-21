@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HomeCam - Welcome</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Home Cam</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/">Home</a>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <main class="container">
+        <div id="status">Loading Cam...</div>
+        <canvas id="videoCanvas" style="width: 100%; height: auto; display: block;"></canvas>
+    </main>
+
+    <!-- jQuery (latest minified) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="./http-live-player.js"></script>
+    <script type="text/javascript">
+        var canvas = document.getElementById("videoCanvas");
+        var wsavc = null;
+        var playerActive = false,
+            timeout = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const camId = urlParams.get('id');
+        if (!camId) {
+            $('#status').html("Camera ID not specified in URL.");
+        }
+
+        function startCamera(camId) {
+            return new Promise(function(resolve, reject) {
+                $('#status').html("Loading Cam...");
+                if (wsavc !== null) {
+                    wsavc.disconnect();
+                    wsavc = null;
+                }
+                $.ajax({
+                    url: '/api/startcam',
+                    method: 'POST',
+                    data: {
+                        id: camId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data && response.data.camport) {
+                            $('#status').hide();
+                            wsavc = new WSAvcPlayer(canvas, "webgl");
+                            wsavc.connect("ws://" + document.location.hostname + ":" + response.data.camport);
+                            playerActive = true;
+                            return resolve(response.data);
+                        } else {
+                            return reject(false);
+                            $('#status').html("Camera details not found or port missing.");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        return reject(false);
+                        $('#status').html("Failed to fetch camera details:", error);
+                    }
+                });
+            });
+        }
+
+        function stopCamera(camId) {
+            return new Promise(function(resolve, reject) {
+                if (wsavc !== null) {
+                    wsavc.disconnect();
+                    wsavc = null;
+                }
+                $.ajax({
+                    url: '/api/stopcam',
+                    method: 'POST',
+                    data: {
+                        id: camId
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.data && response.data.camport) {
+                            $('#status').html('Camera Stopped due to inactivity.<br><a href="#" class="btn btn-primary" id="startCamera" onclick="startCamera(\'' + camId + '\');">Start Camera</a>');
+                            $('#status').show();
+                            playerActive = false;
+                            return resolve(response.data);
+                        } else {
+                            return reject(false);
+                            $('#status').html("Camera details not found or port missing.");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        return reject(false);
+                        $('#status').html("Failed to fetch camera details:", error);
+                    }
+                });
+            });
+        }
+
+        $(document).ready(function() {
+            $('#status').show();
+
+            $(window).on('unload', function(e) {
+                navigator.sendBeacon('/api/stopcam', 'id=' + camId);
+            });
+
+            $(document).on("visibilitychange", function() {
+                if (playerActive) {
+                    if (document.hidden) {
+                        timeout = setTimeout(function() {
+                            // The tab/window is hidden (not visible)
+                            console.log("Tab/window is hidden.");
+                            // Perform actions when the tab loses focus
+                            stopCamera(camId);
+                        }, 5000); // Adjust the timeout as needed
+                    } else {
+                        if (timeout != null) {
+                            clearTimeout(timeout);
+                            timeout = null;
+                        }
+                    }
+                }
+            });
+
+            if (typeof WSAvcPlayer === 'undefined') {
+                $('#status').html("WSAvcPlayer is not defined. Please ensure http-live-player.js is loaded correctly.");
+                return;
+            } else {
+                startCamera(camId);
+            }
+        });
+    </script>
+</body>
+
+</html>

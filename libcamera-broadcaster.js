@@ -36,6 +36,7 @@ var wsServer = null;
 var headerFrames = [];
 var latestIdrFrame = null;
 var videoStream = null;
+var videoProcess = null;
 
 function createBroadcaster(options) {
     // console.log("Creating WebSocketServer");
@@ -50,6 +51,9 @@ function createBroadcaster(options) {
         }));
         // console.log("Sending set-up info");
         socket.send(Buffer.concat([...headerFrames, latestIdrFrame]), { binary: true });
+        socket.on('close', () => {
+            stopBroadcaster();
+        });
     });
     var args = [
         '--bitrate', '2500000', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'
@@ -65,46 +69,69 @@ function createBroadcaster(options) {
     })
 
     // console.log(args)
-    if (process.env.CAMAPP_COMMAND && process.env.CAMAPP_COMMAND !== '') {
-        videoProcess = child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] }).stdout;
-        videoStream = videoProcess
-            .pipe(new Splitter(NALSeparator))
-            .pipe(new stream.Transform({
-                transform: function (chunk, _encoding, callback) {
-                    const chunkType = chunk[0] & 0b11111;
-                    const chunkWithSeparator = Buffer.concat([NALSeparator, chunk]);
 
-                    if (chunkType === 7 || chunkType === 8) {
-                        // console.log("New header frame");
-                        headerFrames.push(chunkWithSeparator);
-                    } else {
-                        if (chunkType === 5) {
-                            latestIdrFrame = chunkWithSeparator;
-                            // console.log("New IDR");
-                        }
-                        this.push(chunkWithSeparator);
+    videoProcess = child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] }).stdout;
+    videoStream = videoProcess
+        .pipe(new Splitter(NALSeparator))
+        .pipe(new stream.Transform({
+            transform: function (chunk, _encoding, callback) {
+                const chunkType = chunk[0] & 0b11111;
+                const chunkWithSeparator = Buffer.concat([NALSeparator, chunk]);
+
+                if (chunkType === 7 || chunkType === 8) {
+                    // console.log("New header frame");
+                    headerFrames.push(chunkWithSeparator);
+                } else {
+                    if (chunkType === 5) {
+                        latestIdrFrame = chunkWithSeparator;
+                        // console.log("New IDR");
                     }
-
-                    callback();
+                    this.push(chunkWithSeparator);
                 }
-            }));
 
-        videoStream.on('data', (data) => {
-            wsServer.clients.forEach((socket) => {
-                socket.send(data, { binary: true });
-            });
+                callback();
+            }
+        }));
+
+    videoStream.on('data', (data) => {
+        wsServer.clients.forEach((socket) => {
+            socket.send(data, { binary: true });
         });
+    });
+}
+
+function stopBroadcaster() {
+    if (videoStream && videoStream != null) {
+        videoStream.unpipe();
+        videoStream = null;
     }
+    if (videoProcess && videoProcess != null) {
+        videoProcess.kill();
+        videoProcess = null;
+    }
+    if (wsServer && wsServer != null) {
+        wsServer.close();
+        wsServer = null;
+    }
+    headerFrames = [];
+    latestIdrFrame = null;
 }
 
 class Broadcaster {
     constructor(options) {
-        createBroadcaster(options);
-        this.wsServer = wsServer;
-        this.headerFrames = headerFrames;
-        this.latestIdrFrame = latestIdrFrame;
-        this.videoStream = videoStream;
+        if (process.env.CAMAPP_COMMAND && process.env.CAMAPP_COMMAND !== '') {
+            createBroadcaster(options);
+            this.wsServer = wsServer;
+            this.headerFrames = headerFrames;
+            this.latestIdrFrame = latestIdrFrame;
+            this.videoStream = videoStream;
+        }
     }
+
+    stopBroadcaster() {
+        stopBroadcaster();
+    }
+
 }
 
 module.exports = Broadcaster;
