@@ -50,10 +50,12 @@ function createBroadcaster(options) {
             height: options.height
         }));
         // console.log("Sending set-up info");
-        socket.send(Buffer.concat([...headerFrames, latestIdrFrame]), { binary: true });
-        socket.on('close', () => {
-            stopBroadcaster();
-        });
+        try {
+            socket.send(Buffer.concat([...headerFrames, latestIdrFrame]), { binary: true });
+        }
+        catch(e) {
+            //silently ignore
+        }
     });
     var args = [
         '--bitrate', '2500000', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'

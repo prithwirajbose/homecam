@@ -1,7 +1,7 @@
 # homecam
 **_Home Surveillance Camera app written in NodeJS for Raspberry Pi_**
 
-In order to use the app, create a `.env` file on the root folder of the app.
+In order to use the app, create a `.env` file on the root folder of the app. Test.
 
 The `.env` should have following key-values:
 ```
