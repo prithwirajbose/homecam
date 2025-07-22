@@ -39,8 +39,6 @@
     <script type="text/javascript">
         var canvas = document.getElementById("videoCanvas");
         var wsavc = null;
-        var playerActive = false,
-            timeout = null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const camId = urlParams.get('id');
@@ -66,8 +64,9 @@
                         if (response.success && response.data && response.data.camport) {
                             $('#status').hide();
                             wsavc = new WSAvcPlayer(canvas, "webgl");
-                            wsavc.connect("ws://" + document.location.hostname + ":" + response.data.camport);
-                            playerActive = true;
+                            setTimeout(()=>{
+                                wsavc.connect("ws://" + document.location.hostname + ":" + response.data.camport);
+                            },2000);
                             return resolve(response.data);
                         } else {
                             return reject(false);
@@ -99,7 +98,6 @@
                         if (response.success && response.data && response.data.camport) {
                             $('#status').html('Camera Stopped due to inactivity.<br><a href="#" class="btn btn-primary" id="startCamera" onclick="startCamera(\'' + camId + '\');">Start Camera</a>');
                             $('#status').show();
-                            playerActive = false;
                             return resolve(response.data);
                         } else {
                             return reject(false);
@@ -116,28 +114,6 @@
 
         $(document).ready(function() {
             $('#status').show();
-
-            $(window).on('unload', function(e) {
-                navigator.sendBeacon('/api/stopcam', 'id=' + camId);
-            });
-
-            $(document).on("visibilitychange", function() {
-                if (playerActive) {
-                    if (document.hidden) {
-                        timeout = setTimeout(function() {
-                            // The tab/window is hidden (not visible)
-                            console.log("Tab/window is hidden.");
-                            // Perform actions when the tab loses focus
-                            stopCamera(camId);
-                        }, 5000); // Adjust the timeout as needed
-                    } else {
-                        if (timeout != null) {
-                            clearTimeout(timeout);
-                            timeout = null;
-                        }
-                    }
-                }
-            });
 
             if (typeof WSAvcPlayer === 'undefined') {
                 $('#status').html("WSAvcPlayer is not defined. Please ensure http-live-player.js is loaded correctly.");

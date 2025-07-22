@@ -1,5 +1,5 @@
 require('dotenv').config();
-const http = require('http'),
+const https = require('https'),
     express = require('express'),
     cookieParser = require('cookie-parser'),
     session = require('express-session'),
@@ -12,6 +12,16 @@ const http = require('http'),
 
 const app = express();
 app.use(cors());
+app.enable('trust proxy');
+app.use((req, res, next) => {
+      if (!req.secure) {
+        // For requests coming through a proxy/load balancer
+        if (req.headers['x-forwarded-proto'] !== 'https') {
+          return res.redirect('https://' + req.headers.host + req.url);
+        }
+      }
+      next(); // Continue to the next middleware or route
+});
 app.use(cookieParser(process.env.COOKIE_SIGN_SECRET));
 app.use(session({
     secret: process.env.COOKIE_SIGN_SECRET, // A secret string used to sign the session ID cookie
@@ -75,7 +85,12 @@ function isAuthenticated(req, res, next) {
     }
 }
 
-const server = http.createServer(app);
+
+const privateKey = fs.readFileSync('server.key', 'utf8');
+const certificate = fs.readFileSync('server.cert', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
+const server = https.createServer(credentials, app);
 server.listen(process.env.PORT || 8080, () => {
     console.log('Server is listening on port '+ (process.env.PORT || 8080));
 });

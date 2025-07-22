@@ -37,6 +37,9 @@ var headerFrames = [];
 var latestIdrFrame = null;
 var videoStream = null;
 var videoProcess = null;
+var coreProcess = null;
+var activeFlag = false;
+var intvl = null;
 
 function createBroadcaster(options) {
     // console.log("Creating WebSocketServer");
@@ -71,8 +74,8 @@ function createBroadcaster(options) {
     })
 
     // console.log(args)
-
-    videoProcess = child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] }).stdout;
+    coreProcess  =child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] });
+    videoProcess = coreProcess.stdout;
     videoStream = videoProcess
         .pipe(new Splitter(NALSeparator))
         .pipe(new stream.Transform({
@@ -100,23 +103,37 @@ function createBroadcaster(options) {
             socket.send(data, { binary: true });
         });
     });
+
+    intvl = setInterval(stopBroadcaster, 10000);
+    activeFlag = true;
+    console.log("Cam started...");
 }
 
 function stopBroadcaster() {
-    if (videoStream && videoStream != null) {
-        videoStream.unpipe();
-        videoStream = null;
+    if(wsServer.clients.size<=0) {
+        if (videoStream && videoStream != null) {
+            videoStream.unpipe();
+            videoStream = null;
+        }
+        if (coreProcess && coreProcess != null && typeof(coreProcess.kill)=='function') {
+            coreProcess.kill();
+            coreProcess = null;
+        }
+        if (wsServer && wsServer != null) {
+            wsServer.close();
+            wsServer = null;
+        }
+        headerFrames = [];
+        latestIdrFrame = null;
+        clearInterval(intvl);
+        intvl = null;
+        console.log("Cam closed due to inactivity...");
+        activeFlag = false;
+        return true;
     }
-    if (videoProcess && videoProcess != null) {
-        videoProcess.kill();
-        videoProcess = null;
+    else {
+        return false;
     }
-    if (wsServer && wsServer != null) {
-        wsServer.close();
-        wsServer = null;
-    }
-    headerFrames = [];
-    latestIdrFrame = null;
 }
 
 class Broadcaster {
@@ -131,7 +148,11 @@ class Broadcaster {
     }
 
     stopBroadcaster() {
-        stopBroadcaster();
+        return stopBroadcaster();
+    }
+
+    isActive() {
+        return activeFlag;
     }
 
 }
