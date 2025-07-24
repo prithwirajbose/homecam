@@ -29,45 +29,10 @@
     <main class="container">
         <h1 class="mb-3">Welcome to HomeCam</h1>
         <p class="lead">Your home surveillance, simplified.</p>
-        <div class="row row-cols-1 row-cols-md-4 g-3">
-            <div class="col">
-                <a href="/camera?id=karunamoyee1" class="text-decoration-none text-reset">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Karunamoyee Flat Cam 1</h5>
-                            <span class="badge bg-success mb-2">Live</span>
-                            <p class="card-text">Covers the drawing room of Karunamoyee Flat</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Karunamoyee Flat Cam 2</h5>
-                        <span class="badge bg-danger mb-2">Offline</span>
-                        <p class="card-text">Covers the front road of Karunamoyee Flat</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Karunamoyee Flat Cam 3</h5>
-                        <span class="badge bg-danger mb-2">Offline</span>
-                        <p class="card-text">Covers the stair case of Karunamoyee Flat</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Simurali Cam 1</h5>
-                        <span class="badge bg-danger mb-2">Offline</span>
-                        <p class="card-text">Covers the long stretch of walk way facing shop</p>
-                    </div>
-                </div>
-            </div>
+        <div class="row row-cols-1 row-cols-md-4 g-3" id="cameraList">
+            <!-- Camera items will be dynamically inserted here -->
+
+
         </div>
     </main>
 
@@ -75,6 +40,29 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap JS Bundle (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="" text/javascript ">
+    $(document).ready(function() {
+        // Fetch camera details from the server
+        $.ajax({
+            url: '/api/getcams',
+            method: 'POST',
+            success: function(data) {
+                if (data.success && data.data && data.data.length > 0) {
+                    data.cams.forEach(function(cam) {
+                        var html = '<div class="col "><a href="/camera?id='+cam.id+' " class="text-decoration-none text-reset "><div class="card h-100 "><div class="card-body "><h5 class="card-title ">'
+                            +cam.id+'</h5><span class="badge bg-success mb-2 ">Live</span><p class="card-text ">Host: '+cam.host+'<br/>Port: '+cam.port+'</p></div></div></a></div>';
+                        $('#cameraList').append(html);
+                    });
+                } else {
+                    $('#cameraList').html('<div class="alert alert-warning ">No cameras found.</div>');
+                }
+            },
+            error: function() {
+                $('#cameraList').html('<div class="alert alert-danger ">Error fetching camera details.</div>');
+            }
+        });
+    });
+    </script>
 </body>
 
 </html>

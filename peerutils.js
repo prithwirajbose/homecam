@@ -1,10 +1,10 @@
 const dgram = require('dgram'),
     os = require('os'),
+    _ = require('lodash'),
+    commonutils = require('./commonutils'),
     SERVER_PORT = 41234,
     CLIENT_PORT = 41235,
     BROADCAST_ADDRESS = '255.255.255.255';
-
-let friendList = [];
 
 function initServer(camData) {
     const server = dgram.createSocket('udp4');
@@ -13,12 +13,12 @@ function initServer(camData) {
     });
 
     server.on('message', (msg, rinfo) => {
-        console.log(`Server received: ${msg} from ${rinfo.address}:${rinfo.port}`);
+
     });
 
     server.on('listening', () => {
         const address = server.address();
-        console.log(`Server listening ${address.address}:${address.port}`);
+        console.log(`Peer discovery server listening on ${address.port}`);
         server.setBroadcast(true); // Enable broadcast mode
     });
 
@@ -42,19 +42,34 @@ function initClient(camData) {
         client.close();
     });
 
+
     client.on('message', (msg, rinfo) => {
-        if (getLocalIpAddress() != rinfo.address && isValidAppSignature(msg.toString(), rinfo.address)) {
-            // If the message is valid and not from itself, add to friend list
-            console.log(`Client received: ${msg} from ${rinfo.address}:${rinfo.port}`);
-            if (!friendList.includes(rinfo.address)) {
-                friendList.push(rinfo.address);
+        var peerCamDetails = commonutils.getPeerDetailsFromPing(msg.toString(), rinfo.address);
+        if (commonutils.getLocalIpAddress() != rinfo.address && !_.isNil(peerCamDetails)) {
+            var myCamDetails = camData.getMyCamDetails();
+            if (myCamDetails.camport == peerCamDetails.camport || myCamDetails.port == peerCamDetails.port) {
+                var deterministicWinner = commonutils.deterministicStringWinner(myCamDetails.id, peerCamDetails.id);
+                if (deterministicWinner === myCamDetails.id) {
+                    if (myCamDetails.camport == peerCamDetails.camport) {
+                        var usedPorts = camData.getCamDetailsFieldAsArray('camport');
+                        commonutils.updateKeyValuePairInEnvFile('CAMPORT', commonutils.getNextFreePort(usedPorts));
+                    } else {
+                        var usedPorts = camData.getCamDetailsFieldAsArray('port');
+                        commonutils.updateKeyValuePairInEnvFile('PORT', commonutils.getNextFreePort(usedPorts));
+                    }
+                    commonutils.restartThisNodeApp();
+                }
+            } else {
+                if (!_.isNil(camData.getCamDetails(peerCamDetails.id))) {
+                    console.log('New Peer Found: ', peerCamDetails.id);
+                }
+                camData.addCamDetails(peerCamDetails);
             }
         }
     });
 
     client.on('listening', () => {
         const address = client.address();
-        console.log(`Client listening ${address.address}:${address.port}`);
         client.setBroadcast(true); // Enable broadcast mode to receive broadcasts
     });
 
@@ -65,5 +80,8 @@ function findPeers(camData) {
     return new Promise((resolve, reject) => {
         initServer(camData);
         initClient(camData);
+        return resolve(true);
     });
 }
+
+module.exports.findPeers = findPeers;

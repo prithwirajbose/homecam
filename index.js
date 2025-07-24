@@ -76,6 +76,12 @@ function isAuthenticated(req, res, next) {
 }
 
 const server = http.createServer(app);
+if (_.isNil(process.env.CAMNAME) || !/^[a-zA-Z0-9]+$/i.test(process.env.CAMNAME)) {
+    console.error('Invalid CAMNAME environment variable. It should be alphanumeric.');
+    process.exit(1);
+}
+
 server.listen(process.env.PORT || 8080, () => {
-    console.log('Server is listening on port '+ (process.env.PORT || 8080));
+    console.log('Server is listening on port ' + (process.env.PORT || 8080));
+    apiutils.findPeers();
 });

@@ -2,6 +2,7 @@ require('dotenv').config();
 const { is } = require('express/lib/request');
 const _ = require('lodash'),
     camData = require('./camdata'),
+    peerUtils = require('./peerutils'),
     Broadcaster = require('./libcamera-broadcaster');
 var broadcaster = null;
 
@@ -17,7 +18,7 @@ function apilogin(req, res) {
 
 function apistartcam(req, res) {
     const camId = req.query.camId || process.env.CAMNAME || 'cam1';
-    const camDetails = camData.getcamdetails(camId);
+    const camDetails = camData.getCamDetails(camId);
     if (camDetails) {
         startCamera(camDetails);
         res.status(200).json(constructResponse(true, { port: camDetails.port, camport: camDetails.camport, id: camId }, null));
@@ -26,9 +27,13 @@ function apistartcam(req, res) {
     }
 }
 
+function apigetcams(req, res) {
+    res.status(200).json(constructResponse(true, camData.getCameras(), null));
+}
+
 function apistopcam(req, res) {
     const camId = req.query.camId || process.env.CAMNAME || 'cam1';
-    const camDetails = camData.getcamdetails(camId);
+    const camDetails = camData.getCamDetails(camId);
     if (camDetails) {
         stopCamera(camDetails);
         res.status(200).json(constructResponse(true, { port: camDetails.port, camport: camDetails.camport, id: camId }, null));
@@ -65,8 +70,15 @@ function constructResponse(success, data, error) {
         error: error
     };
 }
+
+function findPeers() {
+    peerUtils.findPeers(camData);
+}
+
 module.exports.apilogin = apilogin;
 module.exports.apistartcam = apistartcam;
 module.exports.apistopcam = apistopcam;
 module.exports.isValidCredentials = isValidCredentials;
 module.exports.setSession = setSession;
+module.exports.apigetcams = apigetcams;
+module.exports.findPeers = findPeers;
