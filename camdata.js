@@ -29,7 +29,7 @@ module.exports.getCameras = function (camId) {
 
 module.exports.addCamDetails = function (camDetails) {
     camDetails.self = false; // Ensure the camDetails is marked as not self
-    _.set(CAM_DETAILS, camDetails.id, camDetails);
+    CAM_DETAILS[camDetails.id] = camDetails;
 };
 
 module.exports.getCamDetailsFieldAsArray = function (field) {
