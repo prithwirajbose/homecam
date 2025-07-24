@@ -60,7 +60,7 @@ function initClient(camData) {
                     commonutils.restartThisNodeApp();
                 }
             } else {
-                if (!_.isNil(camData.getCamDetails(peerCamDetails.id))) {
+                if (_.isNil(camData.getCamDetails(peerCamDetails.id))) {
                     console.log('New Peer Found: ', peerCamDetails.id);
                 }
                 camData.addCamDetails(peerCamDetails);
