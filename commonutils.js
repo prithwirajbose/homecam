@@ -1,6 +1,7 @@
 const os = require('os'),
     _ = require('lodash'),
     exec = require('child_process').exec,
+    crypto = require('crypto'),
     path = require('path'),
     fs = require('fs');
 require('dotenv').config();
@@ -110,6 +111,10 @@ function getNextFreePort(usedPorts) {
     return '' + sorted[sorted.length - 1] + 1;
 }
 
+function getCookieSignSecret() {
+    return crypto.createHash('md5').update(process.env.GROUP_SIGNATURE || '').digest('hex');
+}
+
 module.exports.getMyCamDetails = getMyCamDetails;
 module.exports.getLocalIpAddress = getLocalIpAddress;
 module.exports.getHostName = getHostName;
@@ -118,3 +123,4 @@ module.exports.deterministicStringWinner = deterministicStringWinner;
 module.exports.updateKeyValuePairInEnvFile = updateKeyValuePairInEnvFile;
 module.exports.restartThisNodeApp = restartThisNodeApp;
 module.exports.getNextFreePort = getNextFreePort;
+module.exports.getCookieSignSecret = getCookieSignSecret;

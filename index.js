@@ -8,13 +8,14 @@ const http = require('http'),
     fs = require('fs'),
     path = require('path'),
     _ = require('lodash'),
-    apiutils = require('./apiutils');
+    apiutils = require('./apiutils'),
+    commonutils = require('./commonutils');
 
 const app = express();
 app.use(cors());
-app.use(cookieParser(process.env.COOKIE_SIGN_SECRET));
+app.use(cookieParser(commonutils.getCookieSignSecret()));
 app.use(session({
-    secret: process.env.COOKIE_SIGN_SECRET, // A secret string used to sign the session ID cookie
+    secret: commonutils.getCookieSignSecret(),
     resave: false, // Don't save session if unmodified
     saveUninitialized: true, // Save new sessions that have not been modified
     cookie: { secure: false } // Set to true in production with HTTPS
