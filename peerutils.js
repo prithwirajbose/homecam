@@ -1,16 +1,14 @@
 const dgram = require('dgram'),
     os = require('os'),
-    camData = require('./camdata'),
     SERVER_PORT = 41234,
     CLIENT_PORT = 41235,
     BROADCAST_ADDRESS = '255.255.255.255';
 
 let friendList = [];
 
-function initServer() {
+function initServer(camData) {
     const server = dgram.createSocket('udp4');
     server.on('error', (err) => {
-        console.error(`Server error:\n${err.stack}`);
         server.close();
     });
 
@@ -25,21 +23,18 @@ function initServer() {
     });
 
     server.bind(SERVER_PORT, () => {
-        // Send a broadcast message every 3 seconds
         setInterval(() => {
-            const message = Buffer.from(getAppSignature());
+            const message = Buffer.from(JSON.stringify(camData.getMyCamDetails()));
             server.send(message, 0, message.length, CLIENT_PORT, BROADCAST_ADDRESS, (err) => {
                 if (err) {
                     console.error('Error sending broadcast:', err);
-                } else {
-                    console.log('Broadcast message sent.');
                 }
             });
-        }, 3000);
+        }, 5000);
     });
 }
 
-function initClient() {
+function initClient(camData) {
     const client = dgram.createSocket('udp4');
 
     client.on('error', (err) => {
@@ -66,9 +61,9 @@ function initClient() {
     client.bind(CLIENT_PORT);
 }
 
-function findPeers() {
+function findPeers(camData) {
     return new Promise((resolve, reject) => {
-        initServer();
-        initClient();
+        initServer(camData);
+        initClient(camData);
     });
 }

@@ -55,13 +55,12 @@ function createBroadcaster(options) {
         // console.log("Sending set-up info");
         try {
             socket.send(Buffer.concat([...headerFrames, latestIdrFrame]), { binary: true });
-        }
-        catch(e) {
+        } catch (e) {
             //silently ignore
         }
     });
     var args = [
-        '--bitrate', '2500000', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'
+        '--bitrate', '250000', '--level', '4.2', '--denoise', 'cdn_off', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'
     ]
 
     const { port, ...libcameraargs } = { ...options };
@@ -74,7 +73,7 @@ function createBroadcaster(options) {
     })
 
     // console.log(args)
-    coreProcess  =child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] });
+    coreProcess = child.spawn(process.env.CAMAPP_COMMAND, args, { stdio: ['ignore', 'pipe', 'inherit'] });
     videoProcess = coreProcess.stdout;
     videoStream = videoProcess
         .pipe(new Splitter(NALSeparator))
@@ -110,12 +109,12 @@ function createBroadcaster(options) {
 }
 
 function stopBroadcaster() {
-    if(wsServer.clients.size<=0) {
+    if (wsServer.clients.size <= 0) {
         if (videoStream && videoStream != null) {
             videoStream.unpipe();
             videoStream = null;
         }
-        if (coreProcess && coreProcess != null && typeof(coreProcess.kill)=='function') {
+        if (coreProcess && coreProcess != null && typeof (coreProcess.kill) == 'function') {
             coreProcess.kill();
             coreProcess = null;
         }
@@ -130,8 +129,7 @@ function stopBroadcaster() {
         console.log("Cam closed due to inactivity...");
         activeFlag = false;
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }

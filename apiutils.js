@@ -38,13 +38,13 @@ function apistopcam(req, res) {
 }
 
 function startCamera(camDetails) {
-    if (broadcaster==null || !broadcaster.isActive()) {
-        broadcaster = new Broadcaster({ width: 320, height: 240, framerate: 15, port: camDetails.camport });
+    if (broadcaster == null || !broadcaster.isActive()) {
+        broadcaster = new Broadcaster({ width: 640, height: 480, framerate: 15, port: camDetails.camport });
     }
 }
 
 function stopCamera(camDetails) {
-    if (broadcaster && broadcaster!=null && broadcaster.isActive() && broadcaster.stopBroadcaster()) {
+    if (broadcaster && broadcaster != null && broadcaster.isActive() && broadcaster.stopBroadcaster()) {
         broadcaster = null;
     }
 }

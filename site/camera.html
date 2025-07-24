@@ -62,11 +62,11 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success && response.data && response.data.camport) {
-                            $('#status').hide();
                             wsavc = new WSAvcPlayer(canvas, "webgl");
-                            setTimeout(()=>{
+                            setTimeout(() => {
+                                $('#status').hide();
                                 wsavc.connect("ws://" + document.location.hostname + ":" + response.data.camport);
-                            },2000);
+                            }, 3000);
                             return resolve(response.data);
                         } else {
                             return reject(false);
