@@ -60,7 +60,7 @@ function createBroadcaster(options) {
         }
     });
     var args = [
-        '--bitrate', '250000', '--level', '4.2', '--denoise', 'cdn_off', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'
+        '--bitrate', '2500000', '--level', '4.2', '--denoise', 'cdn_off', '--nopreview', '--output', '-', '--timeout', '0', '--profile', 'baseline'
     ]
 
     const { port, ...libcameraargs } = { ...options };
