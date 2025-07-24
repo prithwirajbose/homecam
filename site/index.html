@@ -63,7 +63,7 @@
                         var peerHost = cam.host || 'localhost';
                         var peerPort = cam.port || '8080';
                         var peerIp = cam.ip || '127.0.0.1';
-                        var camHostName = currentWindowProtocol + '://'+ (currentWindowHost==myHostName ? peerHost : ( currentWindowHost==myIp ? peerIp : currentWindowHost)) + ':' + (currentWindowPort==myPort ? peerPort : currentWindowPort);
+                        var camHostName = currentWindowProtocol + '://'+ (currentWindowHost.toUpperCase()==myHostName.toUpperCase() ? peerHost : ( currentWindowHost==myIp ? peerIp : currentWindowHost)) + ':' + (currentWindowPort==myPort ? peerPort : currentWindowPort);
                         var html = '<div class="col"><a href="'+camHostName+'/camera?id='+cam.id+'" class="text-decoration-none text-reset"><div class="card h-100"><div class="card-body"><h5 class="card-title">'
                             +cam.id+'</h5><span class="badge bg-success mb-2">Live</span><p class="card-text">Host: '+cam.host+'<br/>Port: '+cam.port+'</p></div></div></a></div>';
                         $('#cameraList').append(html);
