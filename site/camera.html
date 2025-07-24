@@ -66,7 +66,7 @@
                             setTimeout(() => {
                                 $('#status').hide();
                                 wsavc.connect("ws://" + document.location.hostname + ":" + response.data.camport);
-                            }, 3000);
+                            }, 2000);
                             return resolve(response.data);
                         } else {
                             return reject(false);
