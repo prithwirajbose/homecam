@@ -3,7 +3,7 @@ const utils = require('./commonutils');
 
 const myCamDetails = utils.getMyCamDetails();
 var CAM_DETAILS = {};
-CAM_DETAILS[myCamDetails.camId] = myCamDetails;
+CAM_DETAILS[myCamDetails.id] = myCamDetails;
 
 module.exports.getMyCamDetails = function () {
     return myCamDetails;
