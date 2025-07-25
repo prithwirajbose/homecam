@@ -66,7 +66,7 @@ function apivalidatelogin(req, res) {
 
 function startCamera(camDetails) {
     if (broadcaster == null || !broadcaster.isActive()) {
-        broadcaster = new Broadcaster({ width: 640, height: 480, framerate: 15, port: camDetails.camport });
+        broadcaster = new Broadcaster({ width: 480, height: 360, framerate: 15, port: camDetails.camport });
     }
 }
 
