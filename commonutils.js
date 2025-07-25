@@ -91,17 +91,25 @@ function updateKeyValuePairInEnvFile(key, value) {
     fs.writeFileSync(path.join(__dirname, '.env'), updatedLines.join('\n'), 'utf8');
 }
 
-function restartThisNodeApp(expressServer) {
+function restartThisNodeApp() {
     const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
-    exec(command);
-    if (expressServer) {
-        expressServer.close(() => {
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error restarting app: ${error.message}`);
+            return;
+        }
+        console.log(`App restarted successfully: ${stdout}`);
+    });
+    setTimeout(() => {
+        if (expressServer) {
+            expressServer.close(() => {
+                process.exit(0);
+            });
+        } else {
             process.exit(0);
-        });
-    } else {
-        process.exit(0);
-    }
+        }
+    }, 2000);
 }
 
 function getNextFreePort(usedPorts) {
