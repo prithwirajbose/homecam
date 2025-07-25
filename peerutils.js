@@ -53,11 +53,15 @@ function initClient(camData) {
                     console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", I am restarting...");
                     if (myCamDetails.camport == peerCamDetails.camport) {
                         var usedPorts = camData.getCamDetailsFieldAsArray('camport');
-                        commonutils.updateKeyValuePairInEnvFile('CAMPORT', commonutils.getNextFreePort(usedPorts));
+                        var freePort = commonutils.getNextFreePort(usedPorts);
+                        process.env.CAMPORT = freePort;
+                        commonutils.updateKeyValuePairInEnvFile('CAMPORT', freePort);
                     }
                     if (myCamDetails.port == peerCamDetails.port) {
                         var usedPorts = camData.getCamDetailsFieldAsArray('port');
-                        commonutils.updateKeyValuePairInEnvFile('PORT', commonutils.getNextFreePort(usedPorts));
+                        var freePort = commonutils.getNextFreePort(usedPorts);
+                        process.env.PORT = freePort;
+                        commonutils.updateKeyValuePairInEnvFile('PORT', freePort);
                     }
                     commonutils.restartThisNodeApp();
                 } else {
