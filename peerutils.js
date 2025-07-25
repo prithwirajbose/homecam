@@ -7,6 +7,7 @@ const dgram = require('dgram'),
     BROADCAST_ADDRESS = '255.255.255.255';
 const server = dgram.createSocket('udp4');
 const client = dgram.createSocket('udp4');
+var intvl = null;
 
 function initServer(camData) {
     server.on('error', (err) => {
@@ -24,7 +25,13 @@ function initServer(camData) {
     });
 
     server.bind(SERVER_PORT, () => {
-        setInterval(() => {
+        intvl = setInterval(() => {
+            if (camData.isRestarting) {
+                clearInterval(intvl);
+                intvl = null;
+                server.close();
+                return false;
+            }
             const message = Buffer.from(JSON.stringify(camData.getMyCamDetails()));
             server.send(message, 0, message.length, CLIENT_PORT, BROADCAST_ADDRESS, (err) => {
                 if (err) {
@@ -44,36 +51,40 @@ function initClient(camData) {
 
 
     client.on('message', (msg, rinfo) => {
-        var peerCamDetails = commonutils.getPeerDetailsFromPing(msg.toString(), rinfo.address);
-        if (commonutils.getLocalIpAddress() != rinfo.address && !_.isNil(peerCamDetails)) {
-            var myCamDetails = camData.getMyCamDetails();
-            if (myCamDetails.camport == peerCamDetails.camport || myCamDetails.port == peerCamDetails.port) {
-                var deterministicWinner = commonutils.deterministicStringWinner(myCamDetails.id, peerCamDetails.id);
-                if (deterministicWinner === myCamDetails.id) {
-                    console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", I am restarting...");
-                    if (myCamDetails.camport == peerCamDetails.camport) {
-                        var usedPorts = camData.getCamDetailsFieldAsArray('camport');
-                        var freePort = commonutils.getNextFreePort(usedPorts);
-                        process.env.CAMPORT = freePort;
-                        commonutils.updateKeyValuePairInEnvFile('CAMPORT', freePort);
+        if (camData.isRestarting) {
+            client.close();
+            return false;
+        } else {
+            var peerCamDetails = commonutils.getPeerDetailsFromPing(msg.toString(), rinfo.address);
+            if (commonutils.getLocalIpAddress() != rinfo.address && !_.isNil(peerCamDetails)) {
+                var myCamDetails = camData.getMyCamDetails();
+                if (myCamDetails.camport == peerCamDetails.camport || myCamDetails.port == peerCamDetails.port) {
+                    var deterministicWinner = commonutils.deterministicStringWinner(myCamDetails.id, peerCamDetails.id);
+                    if (deterministicWinner === myCamDetails.id) {
+                        console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", I am restarting...");
+                        if (myCamDetails.camport == peerCamDetails.camport) {
+                            var usedPorts = camData.getCamDetailsFieldAsArray('camport');
+                            var freePort = commonutils.getNextFreePort(usedPorts);
+                            process.env.CAMPORT = freePort;
+                            commonutils.updateKeyValuePairInEnvFile('CAMPORT', freePort);
+                        }
+                        if (myCamDetails.port == peerCamDetails.port) {
+                            var usedPorts = camData.getCamDetailsFieldAsArray('port');
+                            var freePort = commonutils.getNextFreePort(usedPorts);
+                            process.env.PORT = freePort;
+                            commonutils.updateKeyValuePairInEnvFile('PORT', freePort);
+                        }
+                        camData.isRestarting = true;
+                        commonutils.restartThisNodeApp();
+                    } else {
+                        console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", peer is restarting...");
                     }
-                    if (myCamDetails.port == peerCamDetails.port) {
-                        var usedPorts = camData.getCamDetailsFieldAsArray('port');
-                        var freePort = commonutils.getNextFreePort(usedPorts);
-                        process.env.PORT = freePort;
-                        commonutils.updateKeyValuePairInEnvFile('PORT', freePort);
-                    }
-                    server.close();
-                    client.close();
-                    commonutils.restartThisNodeApp();
                 } else {
-                    console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", peer is restarting...");
+                    if (_.isNil(camData.getCamDetails(peerCamDetails.id))) {
+                        console.log('New Peer Found: ', peerCamDetails.id);
+                    }
+                    camData.addCamDetails(peerCamDetails);
                 }
-            } else {
-                if (_.isNil(camData.getCamDetails(peerCamDetails.id))) {
-                    console.log('New Peer Found: ', peerCamDetails.id);
-                }
-                camData.addCamDetails(peerCamDetails);
             }
         }
     });

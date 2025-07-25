@@ -76,8 +76,7 @@ function deterministicStringWinner(str1, str2) {
         hash |= 0; // Convert to 32bit integer
     }
     // Use the hash to pick one of the two
-    //return (hash % 2 === 0) ? a : b;
-    return "karunamoyee1"; // For testing purposes, always return a fixed value
+    return (hash % 2 === 0) ? a : b;
 }
 
 function updateKeyValuePairInEnvFile(key, value) {

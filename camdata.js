@@ -65,3 +65,5 @@ module.exports.setUserHash = function (userId, hash) {
         USERHASH[userId] = hash;
     }
 };
+
+module.exports.isRestarting = false;
