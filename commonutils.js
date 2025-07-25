@@ -76,8 +76,8 @@ function deterministicStringWinner(str1, str2) {
         hash |= 0; // Convert to 32bit integer
     }
     // Use the hash to pick one of the two
-    //return (hash % 2 === 0) ? a : b;
-    return "karunamoyee1"; // For testing purposes, always return a fixed value
+    return (hash % 2 === 0) ? a : b;
+    //return "karunamoyee1"; // For testing purposes, always return a fixed value
 }
 
 function updateKeyValuePairInEnvFile(key, value) {
@@ -95,7 +95,7 @@ function updateKeyValuePairInEnvFile(key, value) {
 function restartThisNodeApp() {
     const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
-    exec(command, (error, stdout, stderr) => {
+    exec(`env $(cat ${path.join(__dirname, '.env')} | xargs) ${command}`, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error restarting app: ${error.message}`);
             return;
