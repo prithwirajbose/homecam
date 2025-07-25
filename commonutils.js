@@ -91,11 +91,17 @@ function updateKeyValuePairInEnvFile(key, value) {
     fs.writeFileSync(path.join(__dirname, '.env'), updatedLines.join('\n'), 'utf8');
 }
 
-function restartThisNodeApp() {
+function restartThisNodeApp(expressServer) {
     const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
     exec(command);
-    process.exit(0);
+    if (expressServer) {
+        expressServer.close(() => {
+            process.exit(0);
+        });
+    } else {
+        process.exit(0);
+    }
 }
 
 function getNextFreePort(usedPorts) {

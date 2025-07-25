@@ -93,5 +93,5 @@ if (_.isNil(process.env.CAMNAME) || !/^[a-zA-Z0-9]+$/i.test(process.env.CAMNAME)
 
 server.listen(process.env.PORT || 8080, () => {
     console.log('Server is listening on port ' + (process.env.PORT || 8080));
-    apiutils.findPeers();
+    apiutils.findPeers(server);
 });

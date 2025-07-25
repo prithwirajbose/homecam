@@ -102,8 +102,8 @@ function constructResponse(success, data, error) {
     };
 }
 
-function findPeers() {
-    peerUtils.findPeers(camData);
+function findPeers(server) {
+    peerUtils.findPeers(camData, server);
 }
 
 function isRemoteLoginSuccess(req) {

@@ -42,7 +42,7 @@ function initServer(camData) {
     });
 }
 
-function initClient(camData) {
+function initClient(camData, expressServer) {
 
     client.on('error', (err) => {
         console.error(`Client error:\n${err.stack}`);
@@ -75,7 +75,7 @@ function initClient(camData) {
                             commonutils.updateKeyValuePairInEnvFile('PORT', freePort);
                         }
                         camData.isRestarting = true;
-                        commonutils.restartThisNodeApp();
+                        commonutils.restartThisNodeApp(expressServer);
                     } else {
                         console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", peer is restarting...");
                     }
@@ -97,11 +97,11 @@ function initClient(camData) {
     client.bind(CLIENT_PORT);
 }
 
-function findPeers(camData) {
+function findPeers(camData, expressServer) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             initServer(camData);
-            initClient(camData);
+            initClient(camData, expressServer);
         }, 15000);
         return resolve(true);
     });
