@@ -95,7 +95,7 @@ function updateKeyValuePairInEnvFile(key, value) {
 function restartThisNodeApp() {
     const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
-    exec(`env $(cat ${path.join(__dirname, '.env')} | xargs) ${command}`, (error, stdout, stderr) => {
+    exec(command, (error, stdout, stderr) => {
         if (error) {
             console.error(`Error restarting app: ${error.message}`);
             return;
