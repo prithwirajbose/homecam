@@ -5,9 +5,10 @@ const dgram = require('dgram'),
     SERVER_PORT = 41234,
     CLIENT_PORT = 41235,
     BROADCAST_ADDRESS = '255.255.255.255';
+const server = dgram.createSocket('udp4');
+const client = dgram.createSocket('udp4');
 
 function initServer(camData) {
-    const server = dgram.createSocket('udp4');
     server.on('error', (err) => {
         server.close();
     });
@@ -35,7 +36,6 @@ function initServer(camData) {
 }
 
 function initClient(camData) {
-    const client = dgram.createSocket('udp4');
 
     client.on('error', (err) => {
         console.error(`Client error:\n${err.stack}`);
