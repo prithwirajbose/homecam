@@ -108,7 +108,7 @@ function getNextFreePort(usedPorts) {
         return '8080';
     }
     const sorted = usedPorts.map(Number).sort((a, b) => a - b);
-    return '' + sorted[sorted.length - 1] + 1;
+    return '' + (sorted[sorted.length - 1] + 1);
 }
 
 function getCookieSignSecret() {
