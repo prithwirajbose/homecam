@@ -53,7 +53,8 @@ function initClient(camData) {
                     if (myCamDetails.camport == peerCamDetails.camport) {
                         var usedPorts = camData.getCamDetailsFieldAsArray('camport');
                         commonutils.updateKeyValuePairInEnvFile('CAMPORT', commonutils.getNextFreePort(usedPorts));
-                    } else {
+                    }
+                    if (myCamDetails.port == peerCamDetails.port) {
                         var usedPorts = camData.getCamDetailsFieldAsArray('port');
                         commonutils.updateKeyValuePairInEnvFile('PORT', commonutils.getNextFreePort(usedPorts));
                     }
