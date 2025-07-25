@@ -82,8 +82,10 @@ function initClient(camData) {
 
 function findPeers(camData) {
     return new Promise((resolve, reject) => {
-        initServer(camData);
-        initClient(camData);
+        setTimeout(() => {
+            initServer(camData);
+            initClient(camData);
+        }, 5000);
         return resolve(true);
     });
 }
