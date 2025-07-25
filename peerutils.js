@@ -91,7 +91,7 @@ function findPeers(camData) {
         setTimeout(() => {
             initServer(camData);
             initClient(camData);
-        }, 5000);
+        }, 15000);
         return resolve(true);
     });
 }
