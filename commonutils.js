@@ -91,8 +91,8 @@ function updateKeyValuePairInEnvFile(key, value) {
     fs.writeFileSync(path.join(__dirname, '.env'), updatedLines.join('\n'), 'utf8');
 }
 
-function restartThisNodeApp() {
-    const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
+function restartThisNodeApp(expressServer) {
+    const command = `pm2 restart ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
     exec(command, (error, stdout, stderr) => {
         if (error) {
@@ -100,8 +100,6 @@ function restartThisNodeApp() {
             return;
         }
         console.log(`App restarted successfully: ${stdout}`);
-    });
-    setTimeout(() => {
         if (expressServer) {
             expressServer.close(() => {
                 process.exit(0);
@@ -109,7 +107,7 @@ function restartThisNodeApp() {
         } else {
             process.exit(0);
         }
-    }, 2000);
+    });
 }
 
 function getNextFreePort(usedPorts) {
