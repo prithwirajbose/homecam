@@ -47,7 +47,8 @@
             url: '/api/getcams',
             method: 'POST',
             success: function(data) {
-                if (data.success && data.cams && data.cams.length > 0 && data.remoteAccessHash) {
+                if (data.success && data.data && data.data.cams && data.data.cams.length > 0 && data.data.remoteAccessHash) {
+					data = data.data;
                     var currentWindowHost = window.location.hostname;
                     var currentWindowPort = window.location.port || '80';
                     var currentWindowProtocol = window.location.protocol.replace(':', '');

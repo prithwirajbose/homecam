@@ -116,14 +116,21 @@ function getCookieSignSecret() {
 }
 
 function encryptString(str) {
-    const cipher = crypto.createCipher('aes-256-cbc', getCookieSignSecret());
+    const secret = getCookieSignSecret();
+    // Derive a 32-byte key from the secret (md5 is 16 bytes, so pad or hash again)
+    const key = crypto.createHash('sha256').update(secret).digest();
+    const iv = Buffer.alloc(16, 0); // Use a zero IV for simplicity (not recommended for production)
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
     let encrypted = cipher.update(str, 'utf8', 'hex');
     encrypted += cipher.final('hex');
     return encrypted;
 }
 
 function decryptString(encryptedStr) {
-    const decipher = crypto.createDecipher('aes-256-cbc', getCookieSignSecret());
+    const secret = getCookieSignSecret();
+    const key = crypto.createHash('sha256').update(secret).digest();
+    const iv = Buffer.alloc(16, 0); // Use the same zero IV as in encryptString
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     let decrypted = decipher.update(encryptedStr, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
