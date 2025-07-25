@@ -63,6 +63,8 @@ function initClient(camData) {
                         process.env.PORT = freePort;
                         commonutils.updateKeyValuePairInEnvFile('PORT', freePort);
                     }
+                    server.close();
+                    client.close();
                     commonutils.restartThisNodeApp();
                 } else {
                     console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", peer is restarting...");
