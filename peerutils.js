@@ -30,7 +30,7 @@ function initServer(camData) {
                     console.error('Error sending broadcast:', err);
                 }
             });
-        }, 5000);
+        }, 15000);
     });
 }
 
