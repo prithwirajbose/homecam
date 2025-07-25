@@ -3,7 +3,10 @@ const { is } = require('express/lib/request');
 const _ = require('lodash'),
     camData = require('./camdata'),
     peerUtils = require('./peerutils'),
-    Broadcaster = require('./libcamera-broadcaster');
+    commonutils = require('./commonutils'),
+    request = require('request'),
+    { v4: uuidv4 } = require('uuid');
+Broadcaster = require('./libcamera-broadcaster');
 var broadcaster = null;
 
 
@@ -28,7 +31,7 @@ function apistartcam(req, res) {
 }
 
 function apigetcams(req, res) {
-    res.status(200).json(constructResponse(true, camData.getCameras(), null));
+    res.status(200).json(constructResponse(true, { remoteAccessHash: commonutils.encryptString(req.session.userId + ":::" + camData.getMyCamDetails().id), cams: camData.getCameras() }, null));
 }
 
 function apistopcam(req, res) {
@@ -39,6 +42,25 @@ function apistopcam(req, res) {
         res.status(200).json(constructResponse(true, { port: camDetails.port, camport: camDetails.camport, id: camId }, null));
     } else {
         res.status(404).json(constructResponse(false, null, 'Camera details not found'));
+    }
+}
+
+function apivalidatelogin(req, res) {
+    if (!_.isNil(req.query) && !_.isNil(req.query.remoteHash)) {
+        const hashInfo = commonutils.decryptString(req.query.remoteHash).split(':::');
+        const remoteCamDetails = camData.getCamDetails(hashInfo[1]);
+        if (remoteCamDetails && remoteCamDetails.id === camData.getMyCamDetails().id) {
+            var userId = camData.getUserByHash(hashInfo[0]);
+            if (!_.isNil(userId) && userId !== '') {
+                res.status(200).json(constructResponse(true, { userId: userId }, null));
+            } else {
+                res.status(403).json(constructResponse(false, null, 'This user has not logged in earlier'));
+            }
+        } else {
+            res.status(403).json(constructResponse(false, null, 'This user has not logged in on this camera'));
+        }
+    } else {
+        res.status(400).json(constructResponse(false, null, 'Invalid request'));
     }
 }
 
@@ -55,8 +77,17 @@ function stopCamera(camDetails) {
 }
 
 function setSession(req, res, userId) {
-    req.session.userId = userId;
-    res.cookie('userId', userId, { signed: true, httpOnly: true });
+    if (process.env.APPUSER && process.env.APPUSER !== userId) {
+        userId = camData.getUserByHash(userId);
+    }
+    if (!_.isNil(userId)) {
+        req.session.userId = userId;
+        res.cookie('userId', userId, { signed: true, httpOnly: true });
+        const userHash = commonutils.encryptString(uuidv4() + ":::" + camData.getMyCamDetails().id);
+        camData.setUserHash(userId, userHash);
+    } else {
+        throw new Error('Invalid User Session');
+    }
 }
 
 function isValidCredentials(username, password) {
@@ -75,6 +106,22 @@ function findPeers() {
     peerUtils.findPeers(camData);
 }
 
+function isRemoteLoginSuccess(req) {
+    return new Promise((resolve, reject) => {
+        const hashInfo = commonutils.decryptString(req.query.remoteHash).split(':::');
+        var remoteCamDetails = camData.getCamDetails(hashInfo[1]);
+        var url = req.protocol + '://' + remoteCamDetails.ipAddress + ':' + remoteCamDetails.port + '/api/validatelogin?remoteHash=' + req.query.remoteHash;
+        request.post({ url: url, json: true }, (err, response, body) => {
+            if (err) return resolve(null);
+            if (body && body.success === true && body.data && !_.isNil(body.data.userId) && body.data.userId !== '') {
+                return resolve(body.data);
+            } else {
+                return resolve(null);
+            }
+        });
+    });
+}
+
 module.exports.apilogin = apilogin;
 module.exports.apistartcam = apistartcam;
 module.exports.apistopcam = apistopcam;
@@ -82,3 +129,5 @@ module.exports.isValidCredentials = isValidCredentials;
 module.exports.setSession = setSession;
 module.exports.apigetcams = apigetcams;
 module.exports.findPeers = findPeers;
+module.exports.isRemoteLoginSuccess = isRemoteLoginSuccess;
+module.exports.apivalidatelogin = apivalidatelogin;

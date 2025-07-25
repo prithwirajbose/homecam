@@ -66,11 +66,20 @@ app.get('/:pagename', (req, res) => {
 });
 
 function isAuthenticated(req, res, next) {
-    if (req.originalUrl === '/login' || req.originalUrl === '/api/login' || (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && !_.isNil(req.session) && !_.isNil(req.session.userId) && req.signedCookies.userId == req.session.userId)) {
+    if (req.originalUrl === '/login' || req.originalUrl === '/api/login' || req.originalUrl === '/api/validatelogin' || (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && !_.isNil(req.session) && !_.isNil(req.session.userId) && req.signedCookies.userId == req.session.userId)) {
         return next();
     } else if (!_.isNil(req.signedCookies) && req.signedCookies !== false && !_.isNil(req.signedCookies.userId) && req.signedCookies.userId == process.env.APPUSER) {
         apiutils.setSession(req, res, req.signedCookies.userId);
         return next();
+    } else if (!_.isNil(req.query) && !_.isNil(req.query.remoteHash)) {
+        apiutils.isRemoteLoginSuccess(req).then(remoteLoginResp => {
+            if (!remoteLoginResp && !_.isNil(remoteLoginResp.userId) && remoteLoginResp.userId !== '') {
+                apiutils.setSession(req, res, remoteLoginResp.userId);
+                return next();
+            } else {
+                res.redirect('/login');
+            }
+        });
     } else {
         res.redirect('/login');
     }

@@ -115,6 +115,20 @@ function getCookieSignSecret() {
     return crypto.createHash('md5').update(process.env.GROUP_SIGNATURE || '').digest('hex');
 }
 
+function encryptString(str) {
+    const cipher = crypto.createCipher('aes-256-cbc', getCookieSignSecret());
+    let encrypted = cipher.update(str, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    return encrypted;
+}
+
+function decryptString(encryptedStr) {
+    const decipher = crypto.createDecipher('aes-256-cbc', getCookieSignSecret());
+    let decrypted = decipher.update(encryptedStr, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+}
+
 module.exports.getMyCamDetails = getMyCamDetails;
 module.exports.getLocalIpAddress = getLocalIpAddress;
 module.exports.getHostName = getHostName;
@@ -124,3 +138,5 @@ module.exports.updateKeyValuePairInEnvFile = updateKeyValuePairInEnvFile;
 module.exports.restartThisNodeApp = restartThisNodeApp;
 module.exports.getNextFreePort = getNextFreePort;
 module.exports.getCookieSignSecret = getCookieSignSecret;
+module.exports.encryptString = encryptString;
+module.exports.decryptString = decryptString;

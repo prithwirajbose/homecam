@@ -2,6 +2,7 @@ require('dotenv').config();
 const utils = require('./commonutils');
 
 const myCamDetails = utils.getMyCamDetails();
+var USERHASH = {};
 var CAM_DETAILS = {};
 CAM_DETAILS[myCamDetails.id] = myCamDetails;
 
@@ -40,4 +41,27 @@ module.exports.getCamDetailsFieldAsArray = function (field) {
         }
     }
     return arr;
+};
+
+module.exports.getUserHash = function (userId) {
+    if (userId && USERHASH[userId]) {
+        return USERHASH[userId];
+    } else {
+        return null;
+    }
+};
+
+module.exports.getUserByHash = function (hash) {
+    for (const userId in USERHASH) {
+        if (USERHASH.hasOwnProperty(userId) && USERHASH[userId] === hash) {
+            return userId;
+        }
+    }
+    return null;
+};
+
+module.exports.setUserHash = function (userId, hash) {
+    if (userId && hash) {
+        USERHASH[userId] = hash;
+    }
 };
