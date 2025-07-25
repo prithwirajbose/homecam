@@ -1,6 +1,6 @@
 const os = require('os'),
     _ = require('lodash'),
-    exec = require('child_process').exec,
+    exec = require('child_process').execSync,
     crypto = require('crypto'),
     path = require('path'),
     fs = require('fs');
@@ -94,14 +94,8 @@ function updateKeyValuePairInEnvFile(key, value) {
 function restartThisNodeApp() {
     const command = `node ${process.argv[1]} ${process.argv.slice(2).join(' ')}`;
     console.log(`Restarting app with command: ${command}`);
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error restarting app: ${error.message}`);
-            return;
-        }
-        console.log(`App restarted successfully: ${stdout}`);
-        process.exit(0);
-    });
+    exec(command);
+    process.exit(0);
 }
 
 function getNextFreePort(usedPorts) {
