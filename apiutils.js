@@ -5,8 +5,8 @@ const _ = require('lodash'),
     peerUtils = require('./peerutils'),
     commonutils = require('./commonutils'),
     request = require('request'),
-    { v4: uuidv4 } = require('uuid');
-Broadcaster = require('./libcamera-broadcaster');
+    { v4: uuidv4 } = require('uuid'),
+    ytBroadcaster = require('./yt-live-stream');
 var broadcaster = null;
 
 
@@ -24,7 +24,7 @@ function apistartcam(req, res) {
     const camDetails = camData.getCamDetails(camId);
     if (camDetails) {
         startCamera(camDetails);
-        res.status(200).json(constructResponse(true, { port: camDetails.port, camport: camDetails.camport, id: camId }, null));
+        res.status(200).json(constructResponse(true, { port: camDetails.port, id: camId }, null));
     } else {
         res.status(404).json(constructResponse(false, null, 'Camera details not found'));
     }
@@ -39,7 +39,7 @@ function apistopcam(req, res) {
     const camDetails = camData.getCamDetails(camId);
     if (camDetails) {
         stopCamera(camDetails);
-        res.status(200).json(constructResponse(true, { port: camDetails.port, camport: camDetails.camport, id: camId }, null));
+        res.status(200).json(constructResponse(true, { port: camDetails.port, id: camId }, null));
     } else {
         res.status(404).json(constructResponse(false, null, 'Camera details not found'));
     }

@@ -61,7 +61,7 @@
                     },
                     dataType: 'json',
                     success: function(response) {
-                        if (response.success && response.data && response.data.camport) {
+                        if (response.success && response.data) {
                             wsavc = new WSAvcPlayer(canvas, "webgl");
                             setTimeout(() => {
                                 $('#status').hide();
@@ -95,7 +95,7 @@
                     },
                     dataType: 'json',
                     success: function(response) {
-                        if (response.success && response.data && response.data.camport) {
+                        if (response.success && response.data) {
                             $('#status').html('Camera Stopped due to inactivity.<br><a href="#" class="btn btn-primary" id="startCamera" onclick="startCamera(\'' + camId + '\');">Start Camera</a>');
                             $('#status').show();
                             return resolve(response.data);

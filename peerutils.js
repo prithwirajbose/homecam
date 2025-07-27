@@ -58,16 +58,10 @@ function initClient(camData, expressServer) {
             var peerCamDetails = commonutils.getPeerDetailsFromPing(msg.toString(), rinfo.address);
             if (commonutils.getLocalIpAddress() != rinfo.address && !_.isNil(peerCamDetails)) {
                 var myCamDetails = camData.getMyCamDetails();
-                if (myCamDetails.camport == peerCamDetails.camport || myCamDetails.port == peerCamDetails.port) {
+                if (myCamDetails.port == peerCamDetails.port) {
                     var deterministicWinner = commonutils.deterministicStringWinner(myCamDetails.id, peerCamDetails.id);
                     if (deterministicWinner === myCamDetails.id) {
                         console.log("Cam port conflict detected with peer: " + peerCamDetails.id + ", I am restarting...");
-                        if (myCamDetails.camport == peerCamDetails.camport) {
-                            var usedPorts = camData.getCamDetailsFieldAsArray('camport');
-                            var freePort = commonutils.getNextFreePort(usedPorts);
-                            process.env.CAMPORT = freePort;
-                            commonutils.updateKeyValuePairInEnvFile('CAMPORT', freePort);
-                        }
                         if (myCamDetails.port == peerCamDetails.port) {
                             var usedPorts = camData.getCamDetailsFieldAsArray('port');
                             var freePort = commonutils.getNextFreePort(usedPorts);

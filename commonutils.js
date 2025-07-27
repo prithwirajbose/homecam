@@ -40,7 +40,6 @@ function getMyCamDetails() {
     return {
         id: getMyCamId(),
         port: process.env.PORT || 8080,
-        camport: process.env.CAMPORT || 3000,
         host: getHostName(),
         ipAddress: getLocalIpAddress(),
         groupSignature: process.env.GROUP_SIGNATURE || 'Z2h5w3J2TnB3V282h1d6Jq6yQk5zV0p4G2xvYk1wS2p3d1Jw',
@@ -53,7 +52,7 @@ function getPeerDetailsFromPing(msg, address) {
         if (!_.isNil(msg) && !_.isNil(address)) {
             const peerCamDetails = JSON.parse(msg);
             if (peerCamDetails && peerCamDetails.groupSignature === process.env.GROUP_SIGNATURE && peerCamDetails.ipAddress === address &&
-                peerCamDetails.id && peerCamDetails.port && peerCamDetails.camport && peerCamDetails.host) {
+                peerCamDetails.id && peerCamDetails.port && peerCamDetails.host) {
                 peerCamDetails.self = false; // Mark as not self
                 return peerCamDetails;
             } else if (peerCamDetails && peerCamDetails.groupSignature === process.env.GROUP_SIGNATURE && peerCamDetails.ipAddress === address) {
